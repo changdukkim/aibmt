@@ -1,0 +1,14 @@
+Name:                     svc-deploy-4706b229da36ba10
+Namespace:                default
+Labels:                   name=svc-deploy-4706b229da36ba10
+Annotations:              <none>
+Selector:                 name=deploy-pod-4706b229da36ba10
+Type:                     NodePort
+IP:                       10.104.210.233
+Port:                     <unset>  8888/TCP
+TargetPort:               8888/TCP
+NodePort:                 <unset>  31963/TCP
+Endpoints:                10.244.1.74:8888
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>

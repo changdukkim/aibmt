@@ -1,0 +1,64 @@
+Name:                   deploy-4706b229da36ba10
+Namespace:              default
+CreationTimestamp:      Tue, 09 Apr 2019 11:57:31 +0900
+Labels:                 name=deploy-4706b229da36ba10
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               name=deploy-pod-4706b229da36ba10
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  name=deploy-pod-4706b229da36ba10
+  Init Containers:
+   alpine:
+    Image:      52.79.156.20:5443/alpine:latest
+    Port:       <none>
+    Host Port:  <none>
+    Command:
+      sh
+      -c
+      tar xf /4706b229da36ba10.tar
+    Environment:  <none>
+    Mounts:
+      /4706b229da36ba10.tar from model (ro)
+      /home from model-dir (rw)
+  Containers:
+   tensorflow-serving:
+    Image:      52.79.156.20:5443/tensorflow-serving:latest
+    Port:       9000/TCP
+    Host Port:  0/TCP
+    Command:
+      bash
+      -c
+      tensorflow_model_server --port=9000 --model_name=model --model_base_path=/model
+    Environment:  <none>
+    Mounts:
+      /model/1 from model-dir (rw)
+   tensorflow-serving-proxy:
+    Image:      52.79.156.20:5443/tensorflow-serving-proxy:latest
+    Port:       8888/TCP
+    Host Port:  0/TCP
+    Command:
+      bash
+      -c
+      python /server.py --host=localhost --port=9000 --model_path=/model
+    Environment:  <none>
+    Mounts:
+      /model from model-dir (rw)
+  Volumes:
+   model:
+    Type:          HostPath (bare host directory volume)
+    Path:          /home/admin/models/4706b229da36ba10.tar
+    HostPathType:  File
+   model-dir:
+    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:  
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Progressing    True    NewReplicaSetAvailable
+  Available      True    MinimumReplicasAvailable
+OldReplicaSets:  deploy-4706b229da36ba10-69cfc8d8c (1/1 replicas created)
+NewReplicaSet:   <none>
+Events:          <none>
