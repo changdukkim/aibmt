@@ -1,0 +1,9 @@
+FROM tensorflow/serving:nightly-devel
+RUN mkdir /app
+COPY . /app
+RUN chmod -R 777 /app
+WORKDIR /app
+CMD ["python","mnist_tensorflow_light.py","/tmp/mnist"]
+
+
+
