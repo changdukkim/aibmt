@@ -7,10 +7,10 @@ spec:
   restartPolicy: OnFailure
   containers:
     - name: mnist-light
-      image: "docker-registry.default.svc:5000/openshift/mnist_light:latest"
+      image: "docker-registry.default.svc:5000/openshift/mnist-light:latest"
       volumeMounts:
         - name: mnistpath
-          mountPath:/tmp/mnist
+          mountPath: /tmp/mnist
       env:
         - name: NVIDIA_VISIBLE_DEVICES
           value: all
