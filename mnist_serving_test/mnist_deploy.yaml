@@ -1,5 +1,5 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
+apiVersion: v1
+kind: DeploymentConfig
 metadata:
   name: sacp-deployment
 spec:
@@ -11,37 +11,25 @@ spec:
     spec:
       containers:
       - name: sacp-serving-container
-        imagePullPolicy: IfNotPresent
-        image: tensorflow/serving:latest-devel
+        imagePullPolicy: Always
+        image: docker-registry.default.svc:5000/openshift/mnist-serving
         ports:
         - containerPort: 8500
-        volumeMounts:
-        - mountPath: /tmp
-          name: model-dir
         command:
         - bash
         - -c
-        - tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=mnist --model_base_path=/tmp/mnist;
+        - tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=mnist --model_base_path=/app/mnist-data/mnist;
+        restartPolicy: Always
       - name: sacp-rest-container
-        image: tensorflow/serving:latest-devel
-        imagePullPolicy: IfNotPresent
+        image: docker-registry.default.svc:5000/openshift/mnist-serving
+        imagePullPolicy: Always
         ports:
         - containerPort: 8888
-        volumeMounts:
-        - mountPath: /tmp
-          name: model-dir
-          readOnly: true
         command:
         - bash
         - -c
-        - python /tmp/mnist_client_rest_rpc.py --server=localhost:8500
-      nodeSelector:
-        aicp/type: worker
-      volumes:
-      - hostPath:
-          path: /tmp
-          type: ""
-        name: model-dir
+        - python /app/mnist_client_rest_rpc.py --server=localhost:8500
+        restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
@@ -51,9 +39,9 @@ metadata:
   name: sacp-service
 spec:
   ports:
-  - nodePort: 31547
-    port: 8888
+  - port: 8888
+    protocol: TCP
     targetPort: 8888
   selector:
     app: sacp-model-server
-  type: NodePort
+  type: ClusterIP

@@ -1,0 +1,8 @@
+FROM tensorflow/serving:latest-devel
+RUN mkdir /app
+COPY . /app
+RUN chmod -R 777 /app
+WORKDIR /app
+
+
+
