@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mnist-light
+  namespace: bmt-test 
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: mnist-light
+      image: "docker-registry.default.svc:5000/openshift/mnist-light:latest"
+      command:
+       - python 

@@ -30,5 +30,5 @@ spec:
   volumes:
    - name: mnistpath
      hostPath:
-      path: /tmp/mnist-light
+      path: /tmp/
       type: Directory
