@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sacp-deployment
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: sacp-model-server
+    spec:
+      containers:
+      - name: sacp-serving-container
+        imagePullPolicy: IfNotPresent
+        image: tensorflow/serving:latest-devel
+        ports:
+        - containerPort: 8500
+        volumeMounts:
+        - mountPath: /tmp
+          name: model-dir
+        command:
+        - bash
+        - -c
+        - tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=mnist --model_base_path=/tmp/mnist;
+      - name: sacp-rest-container
+        image: tensorflow/serving:latest-devel
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - mountPath: /tmp
+          name: model-dir
+          readOnly: true
+        command:
+        - bash
+        - -c
+        - python /tmp/mnist_client_rest_rpc.py --server=localhost:8500
+      nodeSelector:
+        aicp/type: worker
+      volumes:
+      - hostPath:
+          path: /tmp
+          type: ""
+        name: model-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: sacp-service
+  name: sacp-service
+spec:
+  ports:
+  - nodePort: 31547
+    port: 8888
+    targetPort: 8888
+  selector:
+    app: sacp-model-server
+  type: NodePort
