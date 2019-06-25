@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mnist-heavy-pv
+  namespace: bmt-test 
+spec:
+#  nodeSelector:
+#   openshift.com/gpu-accelerator: true
+  restartPolicy: OnFailure
+  containers:
+    - name: mnist-heavy
+      image: "docker-registry.default.svc:5000/openshift/mnist-heavy:latest"
+      env:
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: all
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "compute,utility"
+        - name: NVIDIA_REQUIRE_CUDA
+          value: "cuda>=5.0"
+      volumeMounts:
+        - name: mnistpath
+          mountPath: /tmp
+      securityContext:
+       privileged: true
+       capabilities:
+         drop: ["ALL"]
+       seLinuxOptions:
+         type: nvidia_container_t
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+#        seLinuxOptions:
+#         level: "s0:c123,c456"
+  nodeSelector:
+   openshift.com/gpu-accelerator: true
+  volumes:
+   - name: mnistpath
+     hostPath:
+      path: /mnist-data
+      type: Directory
