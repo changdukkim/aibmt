@@ -81,7 +81,7 @@ with K.tf.device('/gpu:0'):
 
     model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(x_test, y_test))
     score = model.evaluate(x_test, y_test, verbose=0)
-    model.save('mnist_heavy_model.pb')
+    model.save('/tmp/mnist_heavy_model.pb')
 
 end = datetime.datetime.now()
 time_delta = end - start
