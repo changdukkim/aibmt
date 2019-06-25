@@ -4,8 +4,13 @@ metadata:
   name: mnist-heavy-pv
   namespace: bmt-test 
 spec:
-#  nodeSelector:
-#   openshift.com/gpu-accelerator: true
+  affinity:
+   nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+     nodeSelectorTerms:
+     - matchExpressions:
+       - key: openshift.com/gpu-accelerator 
+         operator: Exists
   restartPolicy: OnFailure
   containers:
     - name: mnist-heavy
@@ -31,8 +36,6 @@ spec:
           nvidia.com/gpu: 1
 #        seLinuxOptions:
 #         level: "s0:c123,c456"
-  nodeSelector:
-   openshift.com/gpu-accelerator: true
   volumes:
    - name: mnistpath
      hostPath:
