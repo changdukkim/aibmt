@@ -1,0 +1,22 @@
+# Use an official Python runtime as a parent image
+
+#FROM tensorflow/tensorflow:1.10.0-devel-gpu-py3
+FROM tensorflow/serving:latest-devel-gpu
+MAINTAINER pacs3436@nomadconnection.com
+
+# Set the working directory to /app
+
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+#ADD . /app
+COPY mnist_heavy.py /app
+COPY requirements.txt /app
+
+# Install any needed packages specified in requirements.txt
+
+RUN pip3 install --upgrade pip
+RUN pip3 install --trusted-host pypi.python.org -r requirements.txt
+
+
+CMD ["python3", "-m", "mnist_heavy"]
