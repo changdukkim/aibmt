@@ -12,7 +12,7 @@ spec:
       containers:
       - name: sacp-serving-container
         imagePullPolicy: Always
-        image: docker-registry.default.svc:5000/openshift/mnist-serving-heavy
+        image: docker-registry.default.svc:5000/openshift/mnist-serving-medium
         ports:
         - containerPort: 8500
         command:
@@ -21,7 +21,7 @@ spec:
         - tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=mnist --model_base_path=/app/mnist-data/mnist;
         restartPolicy: Always
       - name: sacp-rest-container
-        image: docker-registry.default.svc:5000/openshift/mnist-serving-heavy
+        image: docker-registry.default.svc:5000/openshift/mnist-serving-medium
         imagePullPolicy: Always
         ports:
         - containerPort: 8888
