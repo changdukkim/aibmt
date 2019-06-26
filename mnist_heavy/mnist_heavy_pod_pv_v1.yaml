@@ -15,7 +15,7 @@ spec:
     - name: mnist-heavy
       image: "docker-registry.default.svc:5000/openshift/mnist-heavy:latest"
       env:
-        - name: NVIDIA_VISIBLE_DEVICES
+        - name: CUDA_VISIBLE_DEVICES
           value: all
         - name: NVIDIA_DRIVER_CAPABILITIES
           value: "compute,utility"
