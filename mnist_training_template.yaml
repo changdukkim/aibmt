@@ -1,0 +1,140 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: s2i-mnist-learning
+  annotations:
+    openshift.io/display-name: s2i-mnist-learning
+    description: mnist-learning
+    iconClass: fa fa-tumblr
+    openshift.io/provider-display-name: s2i-mnist-learning
+labels:
+  template: s2i-mnist-learning
+
+parameters:
+- name: NAME
+  description: Name
+  required: true
+  value: mnist-learn
+- name : SOURCE_REPOSITORY_URL
+  description: Input git repository
+  required: true
+- name : CONTEXT_DIR
+  description : git source Context Directory
+  required: false
+- name: GITHUB_WEBHOOK_SECRET
+  description: Github trigger secret.  A difficult to guess string encoded as part
+    of the webhook URL.  Not encrypted.
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+- name : CONTAINER_MOUNT_PATH
+  description: Input CONTAINER_MOUNT_PATH Parent Directory
+  required: true
+  value: /tmp
+- name : PV_NAME
+  description: input 'mnist-light' or 'mnist-medium'
+  required: true
+  value: mnist-light
+
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      description: Keeps track of changes in the application image
+    name: ${NAME}
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      description: Defines how to build the application
+      template.alpha.openshift.io/wait-for-ready: "true"
+    name: ${NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+    source:
+      contextDir: ${CONTEXT_DIR}
+      git:
+        uri: ${SOURCE_REPOSITORY_URL}
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: s2i-mnist-training:latest
+          namespace: openshift
+      type: Source
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+- apiVersion: batch/v1
+  kind: Job
+  annotations:
+   template.alpha.openshift.io/wait-for-ready: true
+   image.openshift.io/triggers: "[{\"from\":{\"kind\":\"ImageStreamTag\",\"name\":\"${NAME}:latest\"},\"fieldPath\":\"spec.jobTemplate.spec.template.spec.containers[?(@.name==\\\"${NAME}\\\")].image\"}]"
+  metadata:
+   name: ${NAME}
+  spec:
+    selector:
+     matchLabels:
+      app: mnist
+    parallelism: 1
+    completions: 1
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+         automatic: true
+         containerNames: ${NAME}
+         from:
+           kind: ImageStreamTag
+           name: ${NAME}:latest
+    template:
+      metadata:
+       name: ${NAME}
+       labels:
+        app: mnist
+      spec:
+       containers:
+       - env:
+         - name: CURRENT_NAMESPACE
+           valueFrom:
+           fieldRef:
+             apiVersion: v1
+             fieldPath: metadata.namespace
+       - name: ${NAME}
+         image: docker-registry.default.svc:5000/s2i-test/${NAME}
+         volumeMounts:
+         - name: ${PV_NAME}-pv
+           mountPath: ${CONTAINER_MOUNT_PATH}
+         command:
+         - bash
+         - -c
+         - python /app/mnist_tensorflow_light.py ${CONTAINER_MOUNT_PATH}
+         securityContext:
+          privileged: true
+       restartPolicy: OnFailure
+    volumes:
+     - name: ${PV_NAME}-pv
+       persistentVolumeClaim:
+        claimName: ${PV_NAME}-pvc 
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: mnist-light-pvc 
+    labels:
+     app: ${NAME} 
+  spec:
+    accessModes:
+    - ReadWriteMany      
+    resources:
+       requests:
+         storage: 1Gi

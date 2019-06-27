@@ -1,7 +1,6 @@
-echo "---> Preparing source..."
+#!/bin/sh
 
-#Create a directory for the source code.
-mkdir -p /app
+echo "---> Preparing source..."
 
 echo "---> Installing application source..."
 cp -Rf /tmp/src/. /app

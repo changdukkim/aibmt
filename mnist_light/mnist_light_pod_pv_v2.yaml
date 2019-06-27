@@ -6,10 +6,14 @@ spec:
   restartPolicy: OnFailure
   containers:
     - name: mnist-light
-      image: "docker-registry.default.svc:5000/openshift/mnist-light:latest"
+      image: "docker.io/tensorflow/tensorflow:latest"
       volumeMounts:
         - name: mnist-light-pv
           mountPath: /tmp
+      command:
+      - bash
+      - -c
+      - apt-get update -y && apt-get install git -y;git clone https://github.com/kdh8733/traning_source.git /tmp/app;python /tmp/app/mnist_tensorflow_light.py /tmp/mnist
       securityContext:
        privileged: true    
 #        seLinuxOptions:

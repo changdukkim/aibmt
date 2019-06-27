@@ -8,7 +8,9 @@ LABEL io.k8s.description="mnist s2i builder example" \
       io.k8s.display-name="mnist training s2i builder example" \
       io.openshift.s2i.scripts-url="image:///usr/libexec/s2i" \
       io.openshift.tags="mnist-builder"
-
 COPY ./s2i/bin/ /usr/libexec/s2i
+RUN mkdir /app
+RUN chown -R 1001:1001 /app
+USER 1001
 WORKDIR /app
 

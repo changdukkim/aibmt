@@ -6,7 +6,7 @@ spec:
   restartPolicy: OnFailure
   containers:
     - name: mnist-light
-      image: "docker-registry.default.svc:5000/openshift/mnist-light:latest"
+      image: "docker.io/tensorflow/tensorflow:latest"
       volumeMounts:
         - name: mnistpath
           mountPath: /tmp

@@ -1,0 +1,63 @@
+#    iconClass: icon-go-gopher
+kind: Template
+apiVersion: v1
+metadata:
+  name: mnist-learning
+  annotations:
+    openshift.io/display-name: mnist-learning
+    description: mnist-learning
+    iconClass: fa fa-tumblr
+    openshift.io/provider-display-name: mnist-learning
+labels:
+  template: mnist-learning
+
+parameters:
+- name: NAME
+  description: Name
+  required: true
+  value: mnist-learn
+- name : GIT_SOURCE_URL
+  description: Input git repository
+  required: true
+- name : CONTAINER_MOUNT_PATH
+  description: Input CONTAINER_MOUNT_PATH Parent Directory
+  required: true
+  value: /tmp
+- name : PV_NAME
+  description: input 'mnist-light' or 'mnist-medium'
+  required: true
+  value: mnist-light
+
+objects:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: ${NAME} 
+  spec:
+    restartPolicy: OnFailure
+    containers:
+      - name: ${NAME}
+        image: "docker.io/tensorflow/tensorflow:latest"
+        volumeMounts:
+          - name: ${PV_NAME}-pv
+            mountPath: ${CONTAINER_MOUNT_PATH}
+        command:
+        - bash
+        - -c
+        - apt-get update -y && apt-get install git -y;git clone ${GIT_SOURCE_URL} ${CONTAINER_MOUNT_PATH}/app;python ${CONTAINER_MOUNT_PATH}/app/mnist_tensorflow_light.py ${CONTAINER_MOUNT_PATH}/mnist
+        securityContext:
+         privileged: true
+    volumes:
+     - name: ${PV_NAME}-pv
+       persistentVolumeClaim:
+        claimName: ${PV_NAME}-pvc 
+#- apiVersion: v1
+#  kind: PersistentVolumeClaim
+#  metadata:
+#    name: mnist-light-pvc  
+#  spec:
+#    accessModes:
+#    - ReadWriteMany      
+#    resources:
+#       requests:
+#         storage: 1Gi
