@@ -1,0 +1,9 @@
+echo "---> Preparing source..."
+
+#Create a directory for the source code.
+mkdir -p /app
+
+echo "---> Installing application source..."
+cp -Rf /tmp/src/. /app
+
+echo "---> Assemble script finished..."
