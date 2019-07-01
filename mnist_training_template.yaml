@@ -1,7 +1,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: s2i-mnist-learning
+  name: s2i-mnist-learning-chakim
   annotations:
     openshift.io/display-name: s2i-mnist-learning
     description: mnist-learning
@@ -79,8 +79,6 @@ objects:
   kind: Job
   annotations:
    template.alpha.openshift.io/wait-for-ready: true
-   image.openshift.io/triggers: "[{\"from\":{\"kind\":\"ImageStreamTag\",\"name\":\"${NAME}:latest\"},\"fieldPath\":\"spec.jobTemplate.spec.template.spec.containers[?(@.name==\\\"${NAME}\\\")].image\"}]"
-  metadata:
    name: ${NAME}
   spec:
     selector:
@@ -111,7 +109,7 @@ objects:
              apiVersion: v1
              fieldPath: metadata.namespace
        - name: ${NAME}
-         image: docker-registry.default.svc:5000/s2i-test/${NAME}
+         image: ${NAME}
          volumeMounts:
          - name: ${PV_NAME}-pv
            mountPath: ${CONTAINER_MOUNT_PATH}
@@ -129,7 +127,7 @@ objects:
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
-    name: mnist-light-pvc 
+    name: ${PV_NAME}-pvc 
     labels:
      app: ${NAME} 
   spec:

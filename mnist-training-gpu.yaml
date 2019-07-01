@@ -1,0 +1,92 @@
+#    iconClass: icon-go-gopher
+kind: Template
+apiVersion: v1
+metadata:
+  name: mnist-training-gpu
+  annotations:
+    openshift.io/display-name: mnist-training-gpu
+    description: mnist-training-gpu
+    iconClass: fa fa-tumblr
+    openshift.io/provider-display-name: mnist-training-gpu
+labels:
+  template: mnist-training-gpu
+
+parameters:
+- name: NAME
+  description: Name
+  required: true
+  value: mnist-training-gpu
+- name : GIT_SOURCE_URL
+  description: Input git repository
+  required: true
+- name : CONTAINER_MOUNT_PATH
+  description: Input CONTAINER_MOUNT_PATH Parent Directory
+  required: true
+  value: /tmp
+- name : CUDA_VISIBLE_DEVICES
+  description: Input GPU Slot (0~3) ex) all / 0,1 / 1,2,3 ..
+  required: true
+  value: 0
+- name : Limit_GPU_Count
+  description: Limit Resource about GPU 
+  required: true
+  value: 1
+
+
+
+objects:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: ${NAME} 
+  spec:
+    affinity:
+     nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+       nodeSelectorTerms:
+       - matchExpressions:
+         - key: openshift.com/gpu-accelerator
+           operator: Exists
+    restartPolicy: OnFailure
+    containers:
+      - name: ${NAME}
+        image: "docker.io/tensorflow/tensorflow:latest"
+        env:
+          - name: CUDA_VISIBLE_DEVICES
+            value: all
+          - name: NVIDIA_DRIVER_CAPABILITIES
+            value: "compute,utility"
+          - name: NVIDIA_REQUIRE_CUDA
+            value: "cuda>=5.0"
+        volumeMounts:
+          - name: ${PV_NAME}-pv
+            mountPath: ${CONTAINER_MOUNT_PATH}
+        securityContext:
+         privileged: true
+         capabilities:
+           drop: ["ALL"]
+         seLinuxOptions:
+           type: nvidia_container_t
+        resources:
+          limits:
+            nvidia.com/gpu: ${Limit_GPU_Count}
+        command:
+        - bash
+        - -c
+        - apt-get update -y && apt-get install git -y;git clone ${GIT_SOURCE_URL} ${CONTAINER_MOUNT_PATH}/training;python ${CONTAINER_MOUNT_PATH}/training/mnist_tensorflow_light.py ${CONTAINER_MOUNT_PATH}/mnist
+        securityContext:
+         privileged: true
+    volumes:
+     - name: mnist-training-gpu-pv
+       persistentVolumeClaim:
+        claimName: mnist-training-gpu-pvc 
+#- apiVersion: v1
+#  kind: PersistentVolumeClaim
+#  metadata:
+#    name: mnist-light-pvc  
+#  spec:
+#    accessModes:
+#    - ReadWriteMany      
+#    resources:
+#       requests:
+#         storage: 1Gi
