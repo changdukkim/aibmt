@@ -2,5 +2,5 @@
 
 set -e
 
-echo "Launching the 'cat runtime'..."
+echo "Launching the 'R runtime'..."
 while true; do sleep 1; echo -n .;done
