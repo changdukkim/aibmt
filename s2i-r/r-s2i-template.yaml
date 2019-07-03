@@ -6,7 +6,7 @@ metadata:
   annotations:
     openshift.io/display-name: r-s2i-build
     description: r-s2i-build
-    iconClass: fa fa-tumblr
+    iconClass: icon-r
     openshift.io/provider-display-name: r-s2i-build
 labels:
   template: r-s2i-build
